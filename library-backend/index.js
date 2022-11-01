@@ -1,5 +1,23 @@
-const { ApolloServer, gql } = require("apollo-server");
+const { ApolloServer, gql, UserInputError } = require("apollo-server");
 const { v1: uuid } = require("uuid");
+const mongoose = require('mongoose')
+const Author = require('./models/Author')
+const Book = require('./models/Book')
+
+
+const MONGODB_URI = `mongodb+srv://fullstackopen:8lN74yXKuhtJD7v3@cluster0.qgqb3at.mongodb.net/graphql-phonebook?retryWrites=true&w=majority`
+
+console.log('connecting to', MONGODB_URI)
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connection to MongoDB:', error.message)
+  })
+
 
 let authors = [
   {
@@ -98,9 +116,9 @@ const typeDefs = gql`
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
+    genres: [String!]!
     id: ID!
-    genres: [String]
   }
 
   type Author {
@@ -118,11 +136,11 @@ const typeDefs = gql`
 
   type Mutation {
     addBook(
-        title: String!
-        published: Int!
-        author: String!
-        genres: [String!]!
-    ): Book
+      title: String!
+      author: String!
+      published: Int!
+      genres: [String!]!
+    ): Book!
     editAuthor(name: String!, setBornTo: Int!): Author
   }
 `;
@@ -153,9 +171,20 @@ const resolvers = {
     },
   },
   Mutation: {
-    
-    addBook: (root, args) => {
-      const book = { ...args, id: uuid() };
+    addBook: async (root, args) => {
+      const book = new Book ({ ...args, id: uuid() });
+
+      try{
+        await book.save()
+      } catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args
+        })
+      }
+
+      return book
+
+      /*
       if(!authors.find(a => a.name === book.author)){
         const author = {
             name: book.author
@@ -164,6 +193,7 @@ const resolvers = {
       }
       books = books.concat(book);
       return book;
+      */
     },
     editAuthor: (root, args) => {
         const author = authors.find(a => a.name === args.name)
