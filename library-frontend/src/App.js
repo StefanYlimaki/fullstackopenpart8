@@ -5,8 +5,15 @@ import BookForm from './components/BookForm'
 import Notification from './components/Notification'
 import Recommendations from './components/Recommendations'
 import LoginForm from './components/LoginForm'
-import { useApolloClient } from '@apollo/client'
+import { gql, useSubscription, useApolloClient } from '@apollo/client'
 
+export const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      title
+    }
+  }
+`
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem('phonenumbers-user-token'))
@@ -26,6 +33,12 @@ const App = () => {
     localStorage.clear()
     client.resetStore()
   }
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      window.alert(`New book called ${subscriptionData.data.bookAdded.title} was added`)
+    }
+  })
 
 
   if(!token){
