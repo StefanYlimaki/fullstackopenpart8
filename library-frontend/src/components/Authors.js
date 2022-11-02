@@ -31,6 +31,8 @@ const Authors = (props) => {
     event.preventDefault();
     const setBornTo = Number(birthyear)
     editAuthor({ variables: { name, setBornTo }})
+    setName('Choose Author')
+    setBirthyear('')
   }
 
   const authors = authorsQuery.data.allAuthors
@@ -59,6 +61,7 @@ const Authors = (props) => {
       <h2>Set Birthyear</h2>
       <form onSubmit={updateAuthor}>
         <select value={name} onChange={({ target }) => setName(target.value)}>
+          <option value='' hidden>Choose Author</option>
           {authors.map(a => <option key={a.name} value={a.name}>{a.name}</option>)}
         </select>
         <div>

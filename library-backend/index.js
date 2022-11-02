@@ -5,6 +5,7 @@ const Author = require("./models/Author");
 const Book = require("./models/Book");
 const User = require("./models/User");
 const jwt = require("jsonwebtoken");
+const { populate } = require("./models/Author");
 const JWT_SECRET = "NEED_HERE_A_SECRET_KEY";
 
 const MONGODB_URI = `mongodb+srv://fullstackopen:8lN74yXKuhtJD7v3@cluster0.qgqb3at.mongodb.net/graphql-phonebook?retryWrites=true&w=majority`;
@@ -68,7 +69,9 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    me: User,
+    me: (root, args, context) => {
+      return context.currentUser;
+    },
     authorCount: async () => Author.collection.countDocuments(),
     bookCount: async () => Book.collection.countDocuments(),
     allAuthors: async () => {
