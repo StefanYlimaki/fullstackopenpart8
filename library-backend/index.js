@@ -78,6 +78,7 @@ const resolvers = {
       return Author.find({});
     },
     allBooks: async (root, args) => {
+      console.log(args)
       if (args.author && args.genre) {
         const author = await Author.findOne({ name: args.author });
         return Book.find({
